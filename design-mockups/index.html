@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FuturX 语音转文字 - H5 设计稿预览</title>
+    <style>
+      :root {
+        --bg: #0b0e14;
+        --card: #121826;
+        --text: #e9eef7;
+        --muted: #9aa4b2;
+        --border: rgba(255, 255, 255, 0.12);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue",
+          Arial, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        background: radial-gradient(1200px 900px at 15% 10%, rgba(229, 57, 53, 0.18), transparent 55%),
+          radial-gradient(1200px 900px at 85% 60%, rgba(80, 122, 255, 0.14), transparent 55%),
+          var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 22px 18px 8px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      main {
+        padding: 14px 18px 28px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: rgba(18, 24, 38, 0.62);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+      }
+      .card header {
+        padding: 14px 14px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .card h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .card .sub {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .frame {
+        background: #0b0e14;
+        padding: 16px;
+        display: grid;
+        place-items: center;
+      }
+      .frame img {
+        width: min(380px, 100%);
+        height: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #fff;
+      }
+      .tips {
+        margin: 0 18px 24px;
+        padding: 14px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(18, 24, 38, 0.52);
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+      code {
+        padding: 1px 6px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      /* ===== Interactive demo styles ===== */
+      .demo-wrap {
+        margin: 14px 18px 18px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(18, 24, 38, 0.52);
+        overflow: hidden;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+      }
+      .demo-head {
+        padding: 14px 14px 12px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .demo-title {
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .demo-sub {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+        line-height: 1.55;
+        flex-basis: 100%;
+      }
+      .demo-body {
+        padding: 14px;
+      }
+      .demo-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        align-items: start;
+      }
+      @media (min-width: 920px) {
+        .demo-row {
+          grid-template-columns: 420px 1fr;
+        }
+      }
+      .phone {
+        width: min(420px, 100%);
+        aspect-ratio: 9 / 16;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: #0b0e14;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 22px 70px rgba(0, 0, 0, 0.45);
+      }
+      .phone img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: contain;
+        background: #fff;
+        transform: translateZ(0);
+      }
+      .fade {
+        animation: fadeIn 160ms ease-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0.35;
+          transform: scale(0.995);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .hotspot {
+        position: absolute;
+        border-radius: 999px;
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+      }
+      .hotspot:focus-visible {
+        outline: 3px solid rgba(229, 57, 53, 0.65);
+        outline-offset: 2px;
+      }
+      .hotspot--mic {
+        /* Based on 720x1280 viewBox; mic center ~ (610, 886) */
+        left: 79.5%;
+        top: 66.0%;
+        width: 12.5%;
+        height: 7.5%;
+      }
+      .hotspot--stop {
+        /* Stop button ~ x:72..648, y:1110..1202 */
+        left: 10%;
+        top: 86.5%;
+        width: 80%;
+        height: 7.8%;
+        border-radius: 18px;
+      }
+      .hotspot--cancel {
+        /* Cancel text around y~1242 */
+        left: 35%;
+        top: 95.6%;
+        width: 30%;
+        height: 3.6%;
+        border-radius: 12px;
+      }
+      .hotspot--undo {
+        /* Chip button around x:520..598 y:904..932 */
+        left: 70.5%;
+        top: 70.4%;
+        width: 12.0%;
+        height: 3.2%;
+        border-radius: 999px;
+      }
+      .hotspot--allow {
+        /* Permission dialog allow button ~ x:366..586 y:700..756 */
+        left: 50.8%;
+        top: 54.7%;
+        width: 30.6%;
+        height: 4.5%;
+        border-radius: 14px;
+      }
+      .panel {
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        padding: 12px;
+        background: rgba(11, 14, 20, 0.65);
+      }
+      .panel h3 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .panel p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .btn {
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        padding: 9px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .btn-primary {
+        border-color: rgba(229, 57, 53, 0.45);
+        background: rgba(229, 57, 53, 0.16);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        font-size: 12px;
+        user-select: none;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #10b981;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>FuturX「文字输入」语音转文字按钮 - H5 设计稿</h1>
+      <p>
+        说明：这是<strong>可落地的交互与视觉草案</strong>（基于你截图里的「文字输入」页结构）。SVG 可直接用于评审、标注、或交给视觉进一步精修。
+      </p>
+    </header>
+
+    <div class="tips">
+      预览方式：直接用浏览器打开本文件。若图片不显示，检查同目录下是否存在
+      <code>screen1_text_input.svg</code>、<code>screen2_recording_sheet.svg</code>、<code>screen3_transcribed.svg</code>。
+    </div>
+
+    <section class="demo-wrap">
+      <div class="demo-head">
+        <div class="demo-title">交互 Demo（可点击模拟）</div>
+        <div class="badge" id="demoStateBadge"><span class="dot"></span><span id="demoStateText">Idle</span></div>
+        <div class="demo-sub">
+          点击手机里的<strong>麦克风</strong>开始；录音页可点<strong>停止并转写</strong>/<strong>取消</strong>；完成态可点<strong>撤销</strong>。
+          如需演示“权限拒绝”，点右侧按钮切换。
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-row">
+          <div class="phone" id="phone">
+            <img id="phoneImg" class="fade" src="./screen1_text_input.svg" alt="demo" />
+            <button class="hotspot hotspot--mic" id="hsMic" aria-label="点击麦克风"></button>
+            <button class="hotspot hotspot--stop" id="hsStop" aria-label="停止并转写" style="display:none"></button>
+            <button class="hotspot hotspot--cancel" id="hsCancel" aria-label="取消" style="display:none"></button>
+            <button class="hotspot hotspot--allow" id="hsAllow" aria-label="允许麦克风权限" style="display:none"></button>
+            <button class="hotspot hotspot--undo" id="hsUndo" aria-label="撤销" style="display:none"></button>
+          </div>
+
+          <div class="panel">
+            <h3>说明（模拟逻辑）</h3>
+            <p id="demoDesc">
+              当前为 Idle：点击麦克风 → 进入「请求权限/启动麦克风」状态，然后自动进入「录音中」。
+            </p>
+            <div class="controls">
+              <button class="btn btn-primary" id="btnReset">重置到 Idle</button>
+              <button class="btn" id="btnPermissionToggle">模拟：权限拒绝（关闭）</button>
+              <button class="btn" id="btnFastForward">快进到完成态</button>
+            </div>
+            <p style="margin-top:10px">
+              注：这是<strong>产品演示级</strong>交互（用于评审/对齐），不代表最终工程实现方式。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <section class="card">
+        <header>
+          <h2>屏幕 1：文字输入页（新增麦克风按钮）</h2>
+          <div class="sub">入口在文本框右下角，降低学习成本，不改变主流程。</div>
+        </header>
+        <div class="frame">
+          <img src="./screen1_text_input.svg" alt="screen1" />
+        </div>
+      </section>
+
+      <section class="card">
+        <header>
+          <h2>屏幕 2：录音中（底部面板）</h2>
+          <div class="sub">显式状态 + 停止/取消，避免“到底有没有在录”的焦虑。</div>
+        </header>
+        <div class="frame">
+          <img src="./screen2_recording_sheet.svg" alt="screen2" />
+        </div>
+      </section>
+
+      <section class="card">
+        <header>
+          <h2>屏幕 3：转写完成（可撤销）</h2>
+          <div class="sub">默认追加到光标处，提供“撤销”回退，提交按钮变为可用。</div>
+        </header>
+        <div class="frame">
+          <img src="./screen3_transcribed.svg" alt="screen3" />
+        </div>
+      </section>
+    </main>
+
+    <script>
+      /**
+       * 轻量交互 Demo：通过“切换 SVG + 热区点击”模拟状态流转。
+       * 目的：补齐「点击麦克风后的准备/权限中」状态，并演示录音→转写→完成与回退点。
+       */
+      (function () {
+        const img = document.getElementById("phoneImg");
+        const badgeText = document.getElementById("demoStateText");
+        const desc = document.getElementById("demoDesc");
+        const hsMic = document.getElementById("hsMic");
+        const hsStop = document.getElementById("hsStop");
+        const hsCancel = document.getElementById("hsCancel");
+        const hsAllow = document.getElementById("hsAllow");
+        const hsUndo = document.getElementById("hsUndo");
+        const btnReset = document.getElementById("btnReset");
+        const btnPermissionToggle = document.getElementById("btnPermissionToggle");
+        const btnFastForward = document.getElementById("btnFastForward");
+
+        /** @type {"idle"|"permission"|"recording"|"transcribing"|"done"|"permissionDenied"} */
+        let state = "idle";
+        let permissionDenied = false;
+        /** @type {number[]} */
+        let timers = [];
+
+        function clearTimers() {
+          timers.forEach((t) => clearTimeout(t));
+          timers = [];
+        }
+
+        function setHotspots() {
+          hsMic.style.display = state === "idle" || state === "done" ? "block" : "none";
+          hsStop.style.display = state === "recording" ? "block" : "none";
+          hsCancel.style.display =
+            state === "permission" || state === "recording" || state === "permissionDenied" ? "block" : "none";
+          hsAllow.style.display = state === "permission" ? "block" : "none";
+          hsUndo.style.display = state === "done" ? "block" : "none";
+        }
+
+        function animateSwap() {
+          img.classList.remove("fade");
+          // Force reflow to restart animation
+          void img.offsetWidth;
+          img.classList.add("fade");
+        }
+
+        function render(next) {
+          state = next;
+          setHotspots();
+
+          if (state === "idle") {
+            img.src = "./screen1_text_input.svg";
+            badgeText.textContent = "Idle";
+            desc.textContent = "当前为 Idle：点击麦克风 → 进入「请求权限/启动麦克风」状态，然后自动进入「录音中」。";
+          } else if (state === "permission") {
+            img.src = "./screen0_permission_request.svg";
+            badgeText.textContent = "Permission / Preparing";
+            desc.textContent =
+              "正在请求权限/启动麦克风：真实环境会触发系统授权弹窗；本 Demo 默认 900ms 后进入录音中。";
+          } else if (state === "permissionDenied") {
+            img.src = "./screen0_permission_request.svg";
+            badgeText.textContent = "Permission Denied";
+            desc.textContent =
+              "模拟权限拒绝：真实产品会提示「无法使用麦克风」并引导用户开启权限（详见 PRD 异常处理）。";
+          } else if (state === "recording") {
+            img.src = "./screen2_recording_sheet.svg";
+            badgeText.textContent = "Recording";
+            desc.textContent = "录音中：点击「停止并转写」进入转写中；点击「取消」回到 Idle。";
+          } else if (state === "transcribing") {
+            img.src = "./screen2_recording_sheet.svg";
+            badgeText.textContent = "Transcribing";
+            desc.textContent = "转写中：本 Demo 约 900ms 后进入完成态（文本插入 + 可撤销）。";
+          } else if (state === "done") {
+            img.src = "./screen3_transcribed.svg";
+            badgeText.textContent = "Done";
+            desc.textContent = "完成态：转写文本已插入到光标处；可点击「撤销」仅撤销本次插入。";
+          }
+
+          animateSwap();
+        }
+
+        function goPermissionFlow() {
+          clearTimers();
+          render("permission");
+
+          if (permissionDenied) {
+            timers.push(
+              window.setTimeout(() => {
+                render("permissionDenied");
+              }, 500)
+            );
+            return;
+          }
+
+          timers.push(
+            window.setTimeout(() => {
+              render("recording");
+            }, 900)
+          );
+        }
+
+        function goTranscribingFlow() {
+          clearTimers();
+          render("transcribing");
+          timers.push(
+            window.setTimeout(() => {
+              render("done");
+            }, 900)
+          );
+        }
+
+        hsMic.addEventListener("click", () => {
+          if (state === "idle" || state === "done") goPermissionFlow();
+        });
+        hsAllow.addEventListener("click", () => {
+          // 模拟用户在系统弹窗里点击“允许”
+          if (state !== "permission") return;
+          clearTimers();
+          render("recording");
+        });
+        hsStop.addEventListener("click", () => {
+          if (state === "recording") goTranscribingFlow();
+        });
+        hsCancel.addEventListener("click", () => {
+          render("idle");
+        });
+        hsUndo.addEventListener("click", () => {
+          // Demo 简化：撤销后回到 Idle（真实产品为删除插入片段并保留用户其余编辑）
+          render("idle");
+        });
+
+        btnReset.addEventListener("click", () => render("idle"));
+        btnFastForward.addEventListener("click", () => {
+          clearTimers();
+          render("done");
+        });
+        btnPermissionToggle.addEventListener("click", () => {
+          permissionDenied = !permissionDenied;
+          btnPermissionToggle.textContent = `模拟：权限拒绝（${permissionDenied ? "开启" : "关闭"}）`;
+        });
+
+        render("idle");
+      })();
+    </script>
+  </body>
+</html>
+
+
+
