@@ -1,9 +1,9 @@
-# 使用 Nginx 部署纯静态站点，避免引入 Node 依赖，Zeabur 可直接构建并运行。
 FROM nginx:alpine
 
-# 将静态资源放到 Nginx 默认站点目录
 COPY public/ /usr/share/nginx/html/
 
-# Nginx 默认会暴露 80 端口；Zeabur 会自动映射
+# 配置 Nginx 监听 8080 端口
+RUN sed -i 's/listen       80;/listen       8080;/g' /etc/nginx/conf.d/default.conf
+RUN sed -i 's/listen       \[::\]:80;/listen       [::]:8080;/g' /etc/nginx/conf.d/default.conf
 
-
+EXPOSE 8080
